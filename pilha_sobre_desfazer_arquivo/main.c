@@ -37,31 +37,31 @@ typedef struct {
 
 // Funções para manipular a pilha
 Celula *criar_celula(Operacao valor) {
-  Celula *celula = malloc(sizeof(Celula));
-  celula->proximo = NULL;
-  celula->valor = valor;
+  Celula *celula = malloc(sizeof(Celula)); //aloca a memoria para a struct
+  celula->proximo = NULL; //define o proximo valor valor como nulo
+  celula->valor = valor; //define o valor da celula com o valor passado na chamada da funcao
   return celula;
 }
 
 Stack *criar_pilha() {
-  Stack *pilha = malloc(sizeof(Stack));
-  pilha->topo = NULL;
-  pilha->qtde = 0;
+  Stack *pilha = malloc(sizeof(Stack)); //aloca a memoria para a pilha
+  pilha->topo = NULL; //seta como nulo o topo
+  pilha->qtde = 0; //inicia com quantiddade 0
   return pilha;
 }
 
 void push(Stack *pilha, Operacao valor) {
-  Celula *novo = criar_celula(valor);
-  novo->proximo = pilha->topo;
-  pilha->topo = novo;
+  Celula *novo = criar_celula(valor); //comeca criando uma nova celula
+  novo->proximo = pilha->topo; // passa o proximo dessa nova celula como o topo da pilha 
+  pilha->topo = novo; //define o topo da pilha para a nova celula
   pilha->qtde++;
 }
 
 Operacao pop(Stack *pilha) {
-  if (pilha->qtde == 0) {
+  if (pilha->qtde == 0) { //verifica se ha alguma operacao ja na pilha
     return NENHUMA_OPERACAO;
   }
-
+// caso tenha, armazena o valor da operacao no topo e ajusta o ponteiro para a celula seguinte
   Operacao valor = pilha->topo->valor;
   Celula *temp = pilha->topo;
   pilha->topo = pilha->topo->proximo;
