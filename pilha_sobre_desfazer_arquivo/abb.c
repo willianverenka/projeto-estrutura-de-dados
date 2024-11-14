@@ -16,13 +16,14 @@ EABB* eabb_inicializar(Registro* dados) {
         return NULL;
     }
     
-    // Aloca novo registro
+    // Aloca registro
     novoNo->dados = (Registro*)malloc(sizeof(Registro));
     if (novoNo->dados == NULL) {
         free(novoNo);
         return NULL;
     }
     
+    // aloca data
     novoNo->dados->entrada = (Data*)malloc(sizeof(Data));
     if (novoNo->dados->entrada == NULL) {
         free(novoNo->dados);
@@ -30,6 +31,7 @@ EABB* eabb_inicializar(Registro* dados) {
         return NULL;
     }
     
+    //copia os dados tanto do registro como da data
     strcpy(novoNo->dados->nome, dados->nome);
     strcpy(novoNo->dados->RG, dados->RG);
     novoNo->dados->idade = dados->idade;
@@ -43,6 +45,7 @@ EABB* eabb_inicializar(Registro* dados) {
     return novoNo;
 }
 
+//inicializa arvore de busca zerada
 void abb_inicializar(ABB* arvore) {
     arvore->raiz = NULL;
     arvore->qtde = 0;
@@ -98,7 +101,8 @@ void abb_inserir(ABB* arvore, Registro* dados, Chave chave) {
 
 EABB* buscarNo(EABB* raiz, Chave chave, int valor) {
 
-    // 
+    //recursao para buscar o no com o valor desejado, filtrando sempre pela chave
+    //caso nao encontre, retorna raiz nula
 
     switch(chave){
         case ANO:
@@ -148,6 +152,7 @@ void liberarABB(ABB* arvore) {
 }
 
 void imprimirEmOrdem(EABB* raiz) {
+    // recursao para imprimir em ordem crescente
     if (raiz != NULL) {
         imprimirEmOrdem(raiz->filho_esq);
         printf("\n=== Dados do Paciente ===\n");

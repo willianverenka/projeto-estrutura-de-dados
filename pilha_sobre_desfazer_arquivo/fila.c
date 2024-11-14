@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>  // Adicionado para usar strcpy
+#include <string.h>  
 #include "./include/registro.h"
 
 typedef struct EFila {
@@ -45,6 +45,7 @@ EFila* criar_EFila(Registro* data) {
     return temp;
 }
 
+//cria uma fila zerada
 Fila* criar_fila() {
     Fila* q = (Fila*)malloc(sizeof(Fila));
     if (q == NULL) return NULL;
@@ -54,9 +55,11 @@ Fila* criar_fila() {
     return q;
 }
 
+//adiciona registro ao fim da fila
+
 void enqueue(Fila* q, Registro* data) {
     EFila* temp = criar_EFila(data);
-    if (temp == NULL) return;  // Verifica se a criação foi bem sucedida
+    if (temp == NULL) return;  
 
     if (q->tail == NULL) {
         q->head = q->tail = temp;
@@ -73,9 +76,11 @@ Registro* dequeue(Fila* q) {
     }
     
     EFila* temp = q->head;
-    Registro* data = temp->dados;  // Não libera os dados, retorna para o chamador
+    Registro* data = temp->dados;  
     
     q->head = q->head->proximo;
+
+    // se a fila ficar vazia, atualiza o tail
     if (q->head == NULL) {
         q->tail = NULL;
     }
