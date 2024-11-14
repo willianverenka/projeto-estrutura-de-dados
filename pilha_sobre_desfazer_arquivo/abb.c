@@ -53,6 +53,10 @@ EABB* eabb_inserir(EABB* raiz, Registro* dados, Chave chave) {
     if (raiz == NULL) {
         return eabb_inicializar(dados);
     }
+
+
+    // define a insercao de acordo com o criterio escolhido (Chave)
+    // para todos os casos a logica permanece a mesma, 
     
     switch(chave){
         case ANO:
@@ -88,13 +92,14 @@ EABB* eabb_inserir(EABB* raiz, Registro* dados, Chave chave) {
 }
 
 void abb_inserir(ABB* arvore, Registro* dados, Chave chave) {
-    printf("Debug: Iniciando inserção na árvore\n");  // Debug
     arvore->raiz = eabb_inserir(arvore->raiz, dados, chave);
     arvore->qtde++;
-    printf("Debug: Inserção concluída. Quantidade de nós: %d\n", arvore->qtde);  // Debug
 }
 
 EABB* buscarNo(EABB* raiz, Chave chave, int valor) {
+
+    // 
+
     switch(chave){
         case ANO:
             if (raiz == NULL || raiz->dados->entrada->ano == valor) {

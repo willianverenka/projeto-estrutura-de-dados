@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// Função para criar uma nova data
 Data* criarData() {
     Data* nova = (Data*)malloc(sizeof(Data));
     printf("Data de entrada (dd mm aaaa): ");
@@ -13,7 +12,6 @@ Data* criarData() {
     return nova;
 }
 
-// Função para criar uma nova lista
 Lista* criarLista() {
     Lista* lista = (Lista*)malloc(sizeof(Lista));
     lista->inicio = NULL;
@@ -24,6 +22,8 @@ Lista* criarLista() {
 void inserePaciente(Lista* lista, Registro* paciente){
     ELista* novo = (ELista*)malloc(sizeof(ELista));
     novo->dados = paciente;
+
+    //insercao no inicio
     
     novo->proximo = lista->inicio;
     lista->inicio = novo;
@@ -97,7 +97,6 @@ Registro* buscarPaciente(Lista* lista, char rg[15]){
     return NULL;
 }
 
-// Função para mostrar lista completa
 void mostrarLista(Lista* lista) {
     if (lista->inicio == NULL) {
         printf("\nNenhum paciente cadastrado!\n");
@@ -106,6 +105,9 @@ void mostrarLista(Lista* lista) {
     
     printf("\n=== Lista de Pacientes ===\n");
     ELista* atual = lista->inicio;
+
+    //percorre pela lista e imprime os dados
+
     while (atual != NULL) {
         printf("\nNome: %s\n", atual->dados->nome);
         printf("Idade: %d\n", atual->dados->idade);
@@ -168,7 +170,7 @@ void removerPaciente(Lista* lista) {
         
         if (strcmp(atual->dados->RG, rg) == 0) {
             
-            // Guarda o próximo antes de começar a liberar memória
+            // guarda o próximo antes de liberar memoria
             ELista* proximo = atual->proximo;
             
             // Remocao no inicio da lista

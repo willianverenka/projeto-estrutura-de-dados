@@ -88,6 +88,9 @@ void enfileirar(Fila *f, Registro paciente, Stack *pilha) {
         f->Head = novo;
         f->Tail = novo;
     } else {
+
+        // adiciona o paciente ao fim da fila
+
         f->Tail->Proximo = novo;
         f->Tail = novo;
     }
@@ -113,6 +116,8 @@ void desenfileirar(Fila *f, Stack *pilha) {
         
         free(temp->Dados);
         free(temp);
+
+        // registra a operacao na fila
 
         push(pilha, DESENFILEIRAR);
         printf("\n");
@@ -144,6 +149,9 @@ void mostrarFila(Fila *f) {
 
     printf("Fila de pacientes:\n");
     EFila *atual = f->Head;
+
+    // percorre dados e imprime o registro
+
     while (atual != NULL) {
         Registro p = *(atual->Dados);
         printf("Nome: %s, Idade: %d, RG: %s, Data de Entrada: %02d/%02d/%04d\n",
@@ -178,6 +186,8 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
         if (ultimaOperacao == ENFILEIRAR && !filaVazia(f)) {
             EFila *atual = f->Head;
             if (atual == f->Tail) {
+                //caso de elemento unico
+
                 free(atual->Dados->entrada);
                 free(atual->Dados);
                 free(atual);
@@ -232,6 +242,8 @@ void carregarDados(Fila *f, Lista* lista) {
     inicializarFila(f);
     Registro paciente;
     paciente.entrada = (Data *)malloc(sizeof(Data));
+
+    // le os dados do arquivo e insere na fila
 
     while (fscanf(file, "%49s %d %14s %d %d %d", 
                  paciente.nome, &paciente.idade, paciente.RG,
@@ -304,7 +316,7 @@ void salvarDados(Fila *f) {
     printf("\n");
 }
 
-// Função para liberar a memória da fila
+//Apaga a fila
 void liberarFila(Fila *f) {
     EFila *atual = f->Head;
     while (atual != NULL) {
