@@ -4,20 +4,7 @@
 #include "./include/lista.h"
 #include "./include/registro.h"
 #include "./include/abb.h"
-
-
-
-// Estrutura do nó da fila
-typedef struct EFila {
-    Registro *Dados;
-    struct EFila *Proximo;
-} EFila;
-
-// Estrutura da fila
-typedef struct {
-    EFila *Head;
-    EFila *Tail;
-} Fila;
+#include "./include/fila.h"
 
 // Definindo as operações possíveis
 typedef enum { ENFILEIRAR, DESENFILEIRAR, NENHUMA_OPERACAO } TipoOperacao;
@@ -70,30 +57,16 @@ TipoOperacao pop(Stack *pilha) {
 
 // Funções para manipular a fila de pacientes
 void inicializarFila(Fila *f) {
-    f->Head = NULL;
-    f->Tail = NULL;
+    f->head = NULL;
+    f->tail = NULL;
 }
 
 int filaVazia(Fila *f) {
-    return f->Head == NULL;
+    return f->head == NULL;
 }
 
 void enfileirar(Fila *f, Registro paciente, Stack *pilha) {
-    EFila *novo = (EFila*)malloc(sizeof(EFila));
-    novo->Dados = (Registro*)malloc(sizeof(Registro));
-    *(novo->Dados) = paciente;
-    novo->Proximo = NULL;
-
-    if (filaVazia(f)) {
-        f->Head = novo;
-        f->Tail = novo;
-    } else {
-
-        // adiciona o paciente ao fim da fila
-
-        f->Tail->Proximo = novo;
-        f->Tail = novo;
-    }
+    enqueue(f, &paciente);
 
     push(pilha, ENFILEIRAR);
     printf("\n");
@@ -106,24 +79,14 @@ void enfileirar(Fila *f, Registro paciente, Stack *pilha) {
 
 void desenfileirar(Fila *f, Stack *pilha) {
     if (!filaVazia(f)) {
-        EFila *temp = f->Head;
-        Registro paciente = *(temp->Dados);
-        
-        f->Head = f->Head->Proximo;
-        if (f->Head == NULL) {
-            f->Tail = NULL;
-        }
-        
-        free(temp->Dados);
-        free(temp);
-
+        Registro* paciente = dequeue(f);
         // registra a operacao na fila
 
         push(pilha, DESENFILEIRAR);
         printf("\n");
         printf("\n");
         printf("========================================================\n");
-        printf("Paciente %s desenfileirado.\n", paciente.nome);
+        printf("Paciente %s desenfileirado.\n", paciente->nome);
         printf("========================================================\n");
         printf("\n");
     } else {
@@ -148,16 +111,16 @@ void mostrarFila(Fila *f) {
     }
 
     printf("Fila de pacientes:\n");
-    EFila *atual = f->Head;
+    EFila *atual = f->head;
 
     // percorre dados e imprime o registro
 
     while (atual != NULL) {
-        Registro p = *(atual->Dados);
+        Registro p = *(atual->dados);
         printf("Nome: %s, Idade: %d, RG: %s, Data de Entrada: %02d/%02d/%04d\n",
                p.nome, p.idade, p.RG, p.entrada->dia, p.entrada->mes,
                p.entrada->ano);
-        atual = atual->Proximo;
+        atual = atual->proximo;
     }
 }
 
@@ -184,24 +147,24 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
 
     if (confirmacao == 's') {
         if (ultimaOperacao == ENFILEIRAR && !filaVazia(f)) {
-            EFila *atual = f->Head;
-            if (atual == f->Tail) {
+            EFila *atual = f->head;
+            if (atual == f->tail) {
                 //caso de elemento unico
 
-                free(atual->Dados->entrada);
-                free(atual->Dados);
+                free(atual->dados->entrada);
+                free(atual->dados);
                 free(atual);
-                f->Head = NULL;
-                f->Tail = NULL;
+                f->head = NULL;
+                f->tail = NULL;
             } else {
-                while (atual->Proximo != f->Tail) {
-                    atual = atual->Proximo;
+                while (atual->proximo != f->tail) {
+                    atual = atual->proximo;
                 }
-                free(f->Tail->Dados->entrada);
-                free(f->Tail->Dados);
-                free(f->Tail);
-                f->Tail = atual;
-                f->Tail->Proximo = NULL;
+                free(f->tail->dados->entrada);
+                free(f->tail->dados);
+                free(f->tail);
+                f->tail = atual;
+                f->tail->proximo = NULL;
             }
             printf("\n");
             printf("\n");
@@ -227,7 +190,7 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
     }
 }
 
-void carregarDados(Fila *f, Lista* lista) {
+void carregardados(Fila *f, Lista* lista) {
     FILE *file = fopen("dados_pacientes.txt", "r");
     if (!file) {
         printf("\n");
@@ -251,29 +214,23 @@ void carregarDados(Fila *f, Lista* lista) {
                  &paciente.entrada->ano) == 6) {
         
         EFila *novo = (EFila*)malloc(sizeof(EFila));
-        novo->Dados = (Registro*)malloc(sizeof(Registro));
-        novo->Dados->entrada = (Data*)malloc(sizeof(Data));
+        novo->dados = (Registro*)malloc(sizeof(Registro));
+        novo->dados->entrada = (Data*)malloc(sizeof(Data));
         
         // Copia os dados individualmente
-        strcpy(novo->Dados->nome, paciente.nome);
-        novo->Dados->idade = paciente.idade;
-        strcpy(novo->Dados->RG, paciente.RG);
-        novo->Dados->entrada->dia = paciente.entrada->dia;
-        novo->Dados->entrada->mes = paciente.entrada->mes;
-        novo->Dados->entrada->ano = paciente.entrada->ano;
+        strcpy(novo->dados->nome, paciente.nome);
+        novo->dados->idade = paciente.idade;
+        strcpy(novo->dados->RG, paciente.RG);
+        novo->dados->entrada->dia = paciente.entrada->dia;
+        novo->dados->entrada->mes = paciente.entrada->mes;
+        novo->dados->entrada->ano = paciente.entrada->ano;
         
-        novo->Proximo = NULL;
+        novo->proximo = NULL;
 
         // insere o paciente tambem na lista de paciente cadastrados
-        inserePaciente(lista, novo->Dados);
+        inserePaciente(lista, novo->dados);
 
-        if (filaVazia(f)) {
-            f->Head = novo;
-            f->Tail = novo;
-        } else {
-            f->Tail->Proximo = novo;
-            f->Tail = novo;
-        }
+        enqueue(f, novo->dados);
     }
 
     free(paciente.entrada);
@@ -281,12 +238,12 @@ void carregarDados(Fila *f, Lista* lista) {
     printf("\n");
     printf("\n");
     printf("========================================================\n");
-    printf("Dados carregados com sucesso.\n");
+    printf("dados carregados com sucesso.\n");
     printf("========================================================\n");
     printf("\n");
 }
 
-void salvarDados(Fila *f) {
+void salvardados(Fila *f) {
     FILE *file = fopen("dados_pacientes.txt", "w");
     if (!file) {
         printf("\n");
@@ -298,36 +255,36 @@ void salvarDados(Fila *f) {
         return;
     }
 
-    EFila *atual = f->Head;
+    EFila *atual = f->head;
     while (atual != NULL) {
-        Registro p = *(atual->Dados);
+        Registro p = *(atual->dados);
         fprintf(file, "%s %d %s %d %d %d\n", 
                 p.nome, p.idade, p.RG,
                 p.entrada->dia, p.entrada->mes, p.entrada->ano);
-        atual = atual->Proximo;
+        atual = atual->proximo;
     }
 
     fclose(file);
     printf("\n");
     printf("\n");
     printf("========================================================\n");
-    printf("Dados escritos e salvos com sucesso.\n");
+    printf("dados escritos e salvos com sucesso.\n");
     printf("========================================================\n");
     printf("\n");
 }
 
 //Apaga a fila
 void liberarFila(Fila *f) {
-    EFila *atual = f->Head;
+    EFila *atual = f->head;
     while (atual != NULL) {
         EFila *temp = atual;
-        atual = atual->Proximo;
-        free(temp->Dados->entrada);
-        free(temp->Dados);
+        atual = atual->proximo;
+        free(temp->dados->entrada);
+        free(temp->dados);
         free(temp);
     }
-    f->Head = NULL;
-    f->Tail = NULL;
+    f->head = NULL;
+    f->tail = NULL;
 }
 
 
@@ -340,7 +297,7 @@ void mostrarInformacoes() {
   printf("Willian Verenka RA: 22.124.081-5\n");
   printf("João Vitor Sitta Giopatto RA: 22.123.054-3\n");
   printf("Ciclo: 4º Semestre\n");
-  printf("Disciplina: Estrutura de Dados CC4652\n");
+  printf("Disciplina: Estrutura de dados CC4652\n");
   printf("11/11/2024\n");
   printf("========================================================\n");
   printf("\n");
@@ -353,7 +310,7 @@ void exibirMenuCadastro(){
     printf("1. Cadastrar Paciente\n");
     printf("2. Consultar Paciente\n");
     printf("3. Mostrar Lista de Pacientes\n");
-    printf("4. Atualizar Dados de Paciente\n");
+    printf("4. Atualizar dados de Paciente\n");
     printf("5. Remover Paciente\n");
     printf("0. Sair\n");
 }
@@ -503,8 +460,8 @@ void exibirMenu() {
   printf("2. Atendimento\n");
   printf("3. Pesquisa\n");
   printf("4. Desfazer Última Operação\n");
-  printf("5. Carregar Dados\n");
-  printf("6. Salvar Dados\n");
+  printf("5. Carregar dados\n");
+  printf("6. Salvar dados\n");
   printf("7. Sobre\n");
   printf("0. Sair\n");
   printf("Escolha uma opção: \n");
@@ -538,10 +495,10 @@ int main() {
             desfazerOperacao(&filaPacientes, pilhaOperacoes);
             break;
         case 5:
-            carregarDados(&filaPacientes, lista);
+            carregardados(&filaPacientes, lista);
             break;
         case 6:
-            salvarDados(&filaPacientes);
+            salvardados(&filaPacientes);
             break;
         case 7:
             mostrarInformacoes();
