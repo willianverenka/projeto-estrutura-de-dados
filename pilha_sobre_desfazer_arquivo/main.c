@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_PACIENTES 10
+#define MAX_PACIENTES 15
 //#define ARQUIVO_DADOS "dados.txt"
 
-// Estrutura para a data de entrada
+// Estruturando data de entrada
 typedef struct {
   int dia;
   int mes;
@@ -14,19 +14,19 @@ typedef struct {
 
 // Estrutura para o registro do paciente
 typedef struct {
-  char nome[50];
+  char nome[35];
   int idade;
   char rg[15];
-  Data *entrada; // Ponteiro para uma estrutura Data
+  Data *entrada;
 } Registro;
 
-// Definindo as operações possíveis
-typedef enum { ENFILEIRAR, DESENFILEIRAR, NENHUMA_OPERACAO } TipoOperacao;
+// Definindo as operações
+typedef enum { ENFILEIRAR, DESENFILEIRAR, NENHUMA_OPERACAO } Operacao;
 
-// Estrutura de célula para a pilha
+// Estruturando celula para a struct pilha
 typedef struct Celula {
   struct Celula *proximo;
-  TipoOperacao valor;
+  Operacao valor;
 } Celula;
 
 // Estrutura da pilha
@@ -36,7 +36,7 @@ typedef struct {
 } Stack;
 
 // Funções para manipular a pilha
-Celula *criar_celula(TipoOperacao valor) {
+Celula *criar_celula(Operacao valor) {
   Celula *celula = malloc(sizeof(Celula));
   celula->proximo = NULL;
   celula->valor = valor;
@@ -50,19 +50,19 @@ Stack *criar_pilha() {
   return pilha;
 }
 
-void push(Stack *pilha, TipoOperacao valor) {
+void push(Stack *pilha, Operacao valor) {
   Celula *novo = criar_celula(valor);
   novo->proximo = pilha->topo;
   pilha->topo = novo;
   pilha->qtde++;
 }
 
-TipoOperacao pop(Stack *pilha) {
+Operacao pop(Stack *pilha) {
   if (pilha->qtde == 0) {
     return NENHUMA_OPERACAO;
   }
 
-  TipoOperacao valor = pilha->topo->valor;
+  Operacao valor = pilha->topo->valor;
   Celula *temp = pilha->topo;
   pilha->topo = pilha->topo->proximo;
   pilha->qtde--;
@@ -73,25 +73,25 @@ TipoOperacao pop(Stack *pilha) {
 // Estrutura para a fila de pacientes
 typedef struct {
   Registro pacientes[MAX_PACIENTES];
-  int frente;
-  int tras;
+  int head;
+  int tail;
 } Fila;
 
 // Funções para manipular a fila de pacientes
 void inicializarFila(Fila *f) {
-  f->frente = 0;
-  f->tras = -1;
+  f->head = 0;
+  f->tail = -1;
 }
 
-int filaVazia(Fila *f) { return f->tras < f->frente; }
+int filaVazia(Fila *f) { return f->tail < f->head; }
 
-int filaCheia(Fila *f) { return f->tras == MAX_PACIENTES - 1; }
+int filaCheia(Fila *f) { return f->tail == MAX_PACIENTES - 1; }
 
 void enfileirar(Fila *f, Registro paciente, Stack *pilha) {
 
   if (!filaCheia(f)) {
 
-    f->pacientes[++f->tras] = paciente;
+    f->pacientes[++f->tail] = paciente;
 
     push(pilha, ENFILEIRAR);
     printf("\n");
@@ -113,7 +113,7 @@ void enfileirar(Fila *f, Registro paciente, Stack *pilha) {
 void desenfileirar(Fila *f, Stack *pilha) {
 
   if (!filaVazia(f)) {
-    Registro paciente = f->pacientes[f->frente++];
+    Registro paciente = f->pacientes[f->head++];
 
     push(pilha, DESENFILEIRAR);
     printf("\n");
@@ -144,19 +144,19 @@ void mostrarFila(Fila *f) {
   } else {
 
     printf("Fila de pacientes:\n");
-    for (int i = f->frente; i <= f->tras; i++) {
+    for (int i = f->head; i <= f->tail; i++) {
 
-      Registro p = f->pacientes[i];
+      Registro paciente = f->pacientes[i];
 
       printf("Nome: %s, Idade: %d, RG: %s, Data de Entrada: %02d/%02d/%04d\n",
-             p.nome, p.idade, p.rg, p.entrada->dia, p.entrada->mes,
-             p.entrada->ano);
+             paciente.nome, paciente.idade, paciente.rg, paciente.entrada->dia,
+             paciente.entrada->mes, paciente.entrada->ano);
     }
   }
 }
 
 void desfazerOperacao(Fila *f, Stack *pilha) {
-  if (pilha->qtde == 0) {
+  if (pilha->qtde == 0) { // verifica se tem alguma operacao armazenada na pilha
     printf("\n");
     printf("\n");
     printf("========================================================\n");
@@ -166,29 +166,40 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
     return;
   }
 
-  TipoOperacao ultimaOperacao = pop(pilha);
+  // Operacao ultimaOperacao = pop(pilha);
+  // pega a ultima operacao na pilha para fazer os laços de comparacao
+  Operacao ultimaOperacao = pilha->topo->valor;
+  char confirm;
+  // confirma qual foi a ultima operacao realizada
   const char *descricaoOperacao = ultimaOperacao == ENFILEIRAR
                                       ? "Enfileirar paciente"
                                       : "Desenfileirar paciente";
 
   printf("Última operação para ser desfeita: %s\n", descricaoOperacao);
+  printf("\n-----------------------------------------------\n");
 
-  printf("Deseja realmente desfazer esta operação? (s/n): ");
-  char confirmacao;
-  scanf(" %c", &confirmacao);
+  printf("Deseja realmente desfazer esta operação? (S/N): ");
 
-  if (confirmacao == 's') {
+  scanf(" %c", &confirm);
+  // se o usuario digitar 's' ele ira remover o valor(ultima operacao) da pilha
+  if (confirm == 's') {
+    pop(pilha);
+    // caso a ultima operacao seja enfileirar e a fila nao esteja vazia
     if (ultimaOperacao == ENFILEIRAR && !filaVazia(f)) {
-      free(f->pacientes[f->tras--].entrada);
+      // lremove o ultimo paciente enfilerado, libera a memoria alocada e
+      // decrementa o tamanho da fila
+      free(f->pacientes[f->tail--].entrada);
+      // f->pacientes[f->tras].entrada = NULL;
       printf("\n");
       printf("\n");
       printf("========================================================\n");
       printf("Operação de enfileirar desfeita.\n");
       printf("========================================================\n");
       printf("\n");
-
-    } else if (ultimaOperacao == DESENFILEIRAR && f->frente > 0) {
-      f->frente--;
+      // repete o processo, porem movendo o head para tras, restaurando o
+      // paciente que eestava no inicio da fila
+    } else if (ultimaOperacao == DESENFILEIRAR && f->head > 0) {
+      f->head--;
       printf("\n");
       printf("\n");
       printf("========================================================\n");
@@ -208,8 +219,8 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
 }
 
 void carregarDados(Fila *f) {
-
   FILE *file = fopen("dados_pacientes.txt", "r");
+
   if (!file) {
     printf("\n");
     printf("\n");
@@ -222,16 +233,19 @@ void carregarDados(Fila *f) {
 
   inicializarFila(f);
   while (!filaCheia(f)) {
-    Registro paciente;
-    paciente.entrada = (Data *)malloc(sizeof(Data));
-
+    Registro paciente; // cria um novo paciente
+    paciente.entrada = (Data *)malloc(sizeof(
+        Data)); // aloca memoria para a data de entrada desse novo paciente
+    // lendo os dados armazenados no arquivo do paciente
     if (fscanf(file, "%49s %d %14s %d %d %d", paciente.nome, &paciente.idade,
                paciente.rg, &paciente.entrada->dia, &paciente.entrada->mes,
                &paciente.entrada->ano) != 6) {
-      free(paciente.entrada);
+      free(paciente.entrada); // caso algum dado esteja faltando, a  memoria é
+                              // liberada
       break;
     }
-    f->pacientes[++f->tras] = paciente;
+    f->pacientes[++f->tail] = paciente; // paciente é adicionado na fila
+    //++f->tail garante que o paciente seja adicionado no proximo espaço vazio
   }
 
   fclose(file);
@@ -255,8 +269,8 @@ void salvarDados(Fila *f) {
     printf("\n");
     return;
   }
-
-  for (int i = f->frente; i <= f->tras; i++) {
+  // laço para percorrer a fila e salvar os dados dos pacientes no arquivo
+  for (int i = f->head; i <= f->tail; i++) {
 
     Registro p = f->pacientes[i];
     fprintf(file, "%s %d %s %d %d %d\n", p.nome, p.idade, p.rg, p.entrada->dia,
@@ -287,7 +301,6 @@ void mostrarInformacoes() {
   printf("\n");
 }
 
-// Exibe o menu
 void exibirMenu() {
   printf("\n======= Sistema de Saúde  =======\n");
   printf("1. Enfileirar Paciente\n");
@@ -350,13 +363,13 @@ int main() {
       break;
     case 0:
       printf("========================================================\n");
-      printf("Saindo do sistema...\n");
+      printf("Saindo do sistema. . .\n");
       printf("========================================================\n");
       printf("\n");
       break;
     default:
       printf("========================================================\n");
-      printf("Opção inválida! Por favor, escolha uma opção válida.\n");
+      printf("Opção inválida!\n");
       printf("========================================================\n");
       printf("\n");
       break;
