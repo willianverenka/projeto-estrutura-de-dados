@@ -1,5 +1,3 @@
-Maria_Silva 45 123 15 1 2020
-Joao_Santos 32 456 16 3 2021
 Ana_Oliveira 28 789 14 5 2019
 Pedro_Costa 53 147 15 7 2022
 Lucia_Ferreira 39 258 13 8 2023
@@ -8,3 +6,6 @@ Julia_Almeida 25 159 16 4 2018
 Roberto_Lima 47 357 14 11 2021
 Sandra_Pereira 34 246 15 9 2023
 Miguel_Santos 42 135 13 6 2020
+Teste3 20 12 18 11 1990
+Teste2 18 11 1999 19 19
+Teste1 19 999 18 11 2009

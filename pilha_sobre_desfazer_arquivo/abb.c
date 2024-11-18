@@ -11,6 +11,7 @@ EABB* eabb_inicializar(Registro* dados) {
     printf("RG: %s\n", dados->RG);
     printf("Data: %d/%d/%d\n", dados->entrada->dia, dados->entrada->mes, dados->entrada->ano);
     
+    // aloca o novo no da arvore
     EABB* novoNo = (EABB*)malloc(sizeof(EABB));
     if (novoNo == NULL) {
         return NULL;
@@ -39,6 +40,7 @@ EABB* eabb_inicializar(Registro* dados) {
     novoNo->dados->entrada->mes = dados->entrada->mes;
     novoNo->dados->entrada->ano = dados->entrada->ano;
     
+    //seta os parentes (nenhum) dos filhos no momento;
     novoNo->filho_esq = NULL;
     novoNo->filho_dir = NULL;
 
@@ -57,10 +59,9 @@ EABB* eabb_inserir(EABB* raiz, Registro* dados, Chave chave) {
         return eabb_inicializar(dados);
     }
 
-
     // define a insercao de acordo com o criterio escolhido (Chave)
-    // para todos os casos a logica permanece a mesma, 
-    
+    // para todos os casos a logica permanece a mesma, ssempre comparando os valores dos filhos e raiz
+    // com
     switch(chave){
         case ANO:
             if (dados->entrada->ano < raiz->dados->entrada->ano) {

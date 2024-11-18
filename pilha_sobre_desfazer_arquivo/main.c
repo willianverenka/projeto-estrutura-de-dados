@@ -21,6 +21,16 @@ typedef struct {
     int qtde;
 } Stack;
 
+// Estrutura para armazenar o último paciente desenfileirado
+typedef struct {
+    Registro *paciente;
+    int valido;  // flag para indicar se há um paciente armazenado
+} UltimoPaciente;
+
+// Variável global para armazenar o último paciente desenfileirado
+UltimoPaciente ultimoPacienteDesenfileirado = {NULL, 0};
+
+
 // Funções para manipular a pilha (mantidas iguais)
 Celula *criar_celula(TipoOperacao valor) {
     Celula *celula = malloc(sizeof(Celula));
@@ -80,8 +90,22 @@ void enfileirar(Fila *f, Registro paciente, Stack *pilha) {
 void desenfileirar(Fila *f, Stack *pilha) {
     if (!filaVazia(f)) {
         Registro* paciente = dequeue(f);
-        // registra a operacao na fila
 
+        ultimoPacienteDesenfileirado.paciente = (Registro*)malloc(sizeof(Registro));
+        ultimoPacienteDesenfileirado.paciente->entrada = (Data*)malloc(sizeof(Data));
+        
+        // Copia os dados do pacientes para o paciente desenfilerado salvo
+        strcpy(ultimoPacienteDesenfileirado.paciente->nome, paciente->nome);
+        ultimoPacienteDesenfileirado.paciente->idade = paciente->idade;
+        strcpy(ultimoPacienteDesenfileirado.paciente->RG, paciente->RG);
+        ultimoPacienteDesenfileirado.paciente->entrada->dia = paciente->entrada->dia;
+        ultimoPacienteDesenfileirado.paciente->entrada->mes = paciente->entrada->mes;
+        ultimoPacienteDesenfileirado.paciente->entrada->ano = paciente->entrada->ano;
+
+        // registra o pacietne como valido para ser restaurado durante a operacao de desfazer
+        ultimoPacienteDesenfileirado.valido = 1;
+        
+        // registra a operacao adequada na fila
         push(pilha, DESENFILEIRAR);
         printf("\n");
         printf("\n");
@@ -135,7 +159,8 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
         return;
     }
 
-    TipoOperacao ultimaOperacao = pop(pilha);
+    TipoOperacao ultimaOperacao= pilha->topo->valor;
+
     const char *descricaoOperacao = ultimaOperacao == ENFILEIRAR
                                         ? "Enfileirar paciente"
                                         : "Desenfileirar paciente";
@@ -146,6 +171,7 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
     scanf(" %c", &confirmacao);
 
     if (confirmacao == 's') {
+        pop(pilha);
         if (ultimaOperacao == ENFILEIRAR && !filaVazia(f)) {
             EFila *atual = f->head;
             if (atual == f->tail) {
@@ -173,6 +199,35 @@ void desfazerOperacao(Fila *f, Stack *pilha) {
             printf("========================================================\n");
             printf("\n");
         } else if (ultimaOperacao == DESENFILEIRAR) {
+            if (ultimoPacienteDesenfileirado.valido) {
+                // Cria novo nó para o paciente
+                EFila *novo = (EFila*)malloc(sizeof(EFila));
+                novo->dados = (Registro*)malloc(sizeof(Registro));
+                novo->dados->entrada = (Data*)malloc(sizeof(Data));
+                
+                // Copia os dados do paciente armazenado
+                strcpy(novo->dados->nome, ultimoPacienteDesenfileirado.paciente->nome);
+                novo->dados->idade = ultimoPacienteDesenfileirado.paciente->idade;
+                strcpy(novo->dados->RG, ultimoPacienteDesenfileirado.paciente->RG);
+                novo->dados->entrada->dia = ultimoPacienteDesenfileirado.paciente->entrada->dia;
+                novo->dados->entrada->mes = ultimoPacienteDesenfileirado.paciente->entrada->mes;
+                novo->dados->entrada->ano = ultimoPacienteDesenfileirado.paciente->entrada->ano;
+                
+                novo->proximo = NULL;
+
+                ultimoPacienteDesenfileirado.valido = 0;
+
+                // insere o desenfileiradono na HEAD da fila
+                if (filaVazia(f)) {
+                    f->head = f->tail = novo;
+                } else {
+                    novo->proximo = f->head;
+                    f->head = novo;
+                }
+
+                printQueue(f);
+
+            }
             printf("\n");
             printf("\n");
             printf("========================================================\n");

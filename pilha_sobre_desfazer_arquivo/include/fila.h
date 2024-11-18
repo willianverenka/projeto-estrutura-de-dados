@@ -1,5 +1,6 @@
 #ifndef FILA_H
 #define FILA_H
+#include "registro.h"
 
 typedef struct EFila {
     Registro* dados;
